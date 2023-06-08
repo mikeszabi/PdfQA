@@ -1,0 +1,9 @@
+*spyproject*
+*pycache*
+*checkpoints*
+.env
+.terraform
+terraform.tfstate*
+.terraform.lock.hcl
+.DS_Store
+.terraform.tfstate.lock.info
