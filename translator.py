@@ -12,6 +12,7 @@ import requests, uuid
 from dotenv import load_dotenv
 # from argostranslate import translate
 import openai
+openai.util.logger.setLevel(logging.WARNING)
 
 load_dotenv(r'../.env')
 openai.api_type = "azure"
