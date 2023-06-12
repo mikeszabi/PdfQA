@@ -23,7 +23,7 @@ openai.api_key = os.getenv('PREFIX_AZURE_OPENAI_KEY')
 openai.api_base = os.getenv('PREFIX_AZURE_API_BASE')
 openai.api_version = os.getenv('PREFIX_AZURE_API_VERSION')
 
-tmp_dir=r".\tmp"
+tmp_dir=r"./tmp"
 
 if 'empty_tmp_files' not in st.session_state:
     for f in os.listdir(tmp_dir):
@@ -35,7 +35,7 @@ if 'page_contents' not in st.session_state:
     st.session_state['page_contents']=[]
     
 #Set the application title
-st.title("USER MANUAL CREATOR")
+st.title("USER MANUAL / SUMMARY CREATOR")
 
 
 def generate_summarizer(
@@ -45,6 +45,7 @@ def generate_summarizer(
     frequency_penalty,
     prompt,
     person_type,
+    sum_instruction='',
 ):
     res = openai.ChatCompletion.create(
         engine="gpt-35-turbo-deployment",
@@ -57,7 +58,7 @@ def generate_summarizer(
          {
           "role": "system",
           #"content": "Create a user manual!",
-          "content": "Készíts használati utasítást!",
+          "content": f"{sum_instruction}",
          },
          {
           "role": "user",
@@ -73,7 +74,7 @@ def file_processor(files):
         temp_path=os.path.join(tmp_dir, file.name)
         if not os.path.exists(temp_path):
             bytes_data = files[i].read()  # read the content of the file in binary
-            temp_path=os.path.join(r".\tmp", file.name)
+            temp_path=os.path.join(r"./tmp", file.name)
             print(temp_path)
             with open(temp_path, "wb") as f:
                 f.write(bytes_data)  # write this content elsewhere
@@ -90,17 +91,17 @@ file_processor(files)
 # input_text = st.text_area("Enter the text you want to summarize:", height=200)
 
 #Initiate three columns for section to be side-by-side
-col1, col2, col3 = st.columns(3)
+# col1, col2, col3 = st.columns(3)
 
 #Slider to control the model hyperparameter
-with col1:
+with st.sidebar:
     token = st.slider("Token", min_value=0.0, max_value=10000.0, value=50.0, step=1.0)
     temp = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     top_p = st.slider("Nucleus Sampling", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
     f_pen = st.slider("Frequency Penalty", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
 
 #Selection box to select the summarization style
-with col2:
+with st.sidebar:
     option = st.selectbox(
         "How do you like to be explained?",
         (
@@ -113,7 +114,7 @@ with col2:
     )
 
 #Showing the current parameter used for the model 
-with col3:
+with st.sidebar:
     with st.expander("Current Parameter"):
         st.write("Current Token :", token)
         st.write("Current Temperature :", temp)
@@ -121,10 +122,22 @@ with col3:
         st.write("Current Frequency Penalty :", f_pen)
 
 #Creating button for execute the text summarization
+
+if st.button("UserManual"):
+    if len(st.session_state['page_contents'])>0:
+        for i, page_content in enumerate(st.session_state['page_contents']):
+            summary_text=generate_summarizer(token, temp, top_p, f_pen, page_content, option,
+                                        sum_instruction='Create a User Manual from the content Hungarian!')
+            message(f"Page:{i}\n:{summary_text}",key=str(i))
+            print(i)
+            time.sleep(10)
+        # st.write(generate_summarizer(token, temp, top_p, f_pen, input_text, option))
 if st.button("Summarize"):
     if len(st.session_state['page_contents'])>0:
         for i, page_content in enumerate(st.session_state['page_contents']):
-            message(generate_summarizer(token, temp, top_p, f_pen, page_content, option),key=str(i))
+            summary_text=generate_summarizer(token, temp, top_p, f_pen, page_content, option,
+                                        sum_instruction='Summarize the content in Hungarian!')  
+            message(f"Page:{i}\n:{summary_text}",key=str(i))
             print(i)
             time.sleep(10)
         # st.write(generate_summarizer(token, temp, top_p, f_pen, input_text, option))

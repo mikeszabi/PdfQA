@@ -10,6 +10,7 @@ import logging
 logging.getLogger().setLevel(logging.CRITICAL)
 import os
 import openai
+openai.util.logger.setLevel(logging.WARNING)
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
@@ -52,6 +53,7 @@ def populate_chromadb(file_names):
     collection = client.create_collection(name=COLLECTION,embedding_function=embedding_function)
     
     page_id=-1
+
     for file_name in file_names:
         loader = PyPDFLoader(file_name)
         pages = loader.load_and_split()
@@ -61,7 +63,9 @@ def populate_chromadb(file_names):
             page_id+=1
             content=re.sub(r'(\.\.+)|(\n)','',page.page_content)
             try:
-                content=translate_openai(content)
+                content_en=translate_openai(content)
+                if content_en:
+                    content=content_en
             except:
                 print("Tranlate error")
             print(content)
@@ -80,5 +84,5 @@ def main():
     file_names = [os.path.join(FILE_DIR,f) for f in os.listdir(FILE_DIR) if f.lower().endswith('.pdf')]
     populate_chromadb(file_names)
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+     main()
