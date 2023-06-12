@@ -59,8 +59,8 @@ def populate_chromadb(file_names):
         pages = loader.load_and_split()
     
         for page in pages:
-            print(f"{file_name} : {page_id} / {len(pages)}")
             page_id+=1
+            print(f"{file_name} : {page_id} / {len(pages)}")
             content=re.sub(r'(\.\.+)|(\n)','',page.page_content)
             try:
                 content_en=translate_openai(content)
