@@ -5,6 +5,7 @@ Created on Mon Jun  5 09:08:17 2023
 @author: Szabi
 """
 
+import re
 import logging
 logging.getLogger().setLevel(logging.CRITICAL)
 import os
@@ -13,6 +14,7 @@ import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 from langchain.document_loaders import PyPDFLoader
+
 import time
 from translator import translate_openai
 
@@ -49,18 +51,17 @@ def populate_chromadb(file_names):
 
     collection = client.create_collection(name=COLLECTION,embedding_function=embedding_function)
     
-    id=0
+    page_id=-1
     for file_name in file_names:
-        print(file_name)
         loader = PyPDFLoader(file_name)
         pages = loader.load_and_split()
-        #print(pages[0].page_content)
     
         for page in pages:
-            id+=1
-            content=page.page_content.replace("\n", "")
+            print(f"{file_name} : {page_id} / {len(pages)}")
+            page_id+=1
+            content=re.sub(r'(\.\.+)|(\n)','',page.page_content)
             try:
-                content=translate_openai(content).replace("\n", "")
+                content=translate_openai(content)
             except:
                 print("Tranlate error")
             print(content)
@@ -68,7 +69,7 @@ def populate_chromadb(file_names):
                 documents=[content], # we handle tokenization, embedding, and indexing automatically. You can skip that and add your own embeddings as well
                 metadatas=[page.metadata], # filter on these!
                 #embeddings=[content],
-                ids=[str(id)]) # unique for each doc
+                ids=[str(page_id)]) # unique for each doc
             time.sleep(1)
             # if id>3:
             #     break

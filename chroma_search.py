@@ -35,7 +35,7 @@ COLLECTION='standards'
 
 def query_chroma(query_texts, max_results):
 
-    query_texts_en=translate_openai(question)
+    query_texts_en=translate_openai(query_texts)
     embedding_function = OpenAIEmbeddingFunction(api_key=openai.api_key, model_name=EMBEDDING_MODEL)
 
     client = chromadb.Client(
