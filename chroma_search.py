@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.DEBUG)
 EMBEDDING_MODEL = "text-embedding-ada-002"
 ABS_PATH = r'.' #os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.path.join(ABS_PATH, "db") # persistent directory
-COLLECTION='standards'
+COLLECTION='guides'
 # DB_DIR = os.path.join(ABS_PATH, "db2")
 # COLLECTION='fonendoscope'
 

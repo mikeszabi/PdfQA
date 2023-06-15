@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG)
 EMBEDDING_MODEL = "text-embedding-ada-002"
 ABS_PATH = r'.' #os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.path.join(ABS_PATH, "db")
-COLLECTION='standards'
+COLLECTION='guides'
 FILE_DIR=r'./docs'
 #file_names=[r'./docs/1041-2008_A1-2014_MSZ_EN.pdf']
 
@@ -52,28 +52,30 @@ def populate_chromadb(file_names):
 
     collection = client.create_collection(name=COLLECTION,embedding_function=embedding_function)
     
-    page_id=-1
+    all_page_id=0
+    file_ind=0
 
     for file_name in file_names:
+        file_ind+=1
         loader = PyPDFLoader(file_name)
         pages = loader.load_and_split()
     
         for page in pages:
-            page_id+=1
-            print(f"{file_name} : {page_id} / {len(pages)}")
-            content=re.sub(r'(\.\.+)|(\n)','',page.page_content)
-            try:
-                content_en=translate_openai(content)
-                if content_en:
-                    content=content_en
-            except:
-                print("Tranlate error")
+            all_page_id+=1
+            print(f"{all_page_id} : {file_name} : {file_ind} / {len(file_names)} - {len(pages)}")
+            content=re.sub(r'(\.\.+)|(__+)|(\n)','',page.page_content)
+            # try:
+            #     content_en=translate_openai(content)
+            #     if content_en:
+            #         content=content_en
+            # except:
+            #     print("Tranlate error")
             print(content)
             collection.add(
                 documents=[content], # we handle tokenization, embedding, and indexing automatically. You can skip that and add your own embeddings as well
                 metadatas=[page.metadata], # filter on these!
                 #embeddings=[content],
-                ids=[str(page_id)]) # unique for each doc
+                ids=[str(all_page_id)]) # unique for each doc
             time.sleep(1)
             # if id>3:
             #     break
